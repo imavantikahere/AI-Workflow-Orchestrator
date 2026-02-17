@@ -33,18 +33,19 @@ Testing (optional but recommended)
 pytest + httpx for API tests
 
 # Project Structure
+```text
 app/
-  models.py        # Enums + Request + AuditEvent dataclasses
-  engine.py        # State machine + rules + approvals + audit logic
-  main.py          # FastAPI endpoints (calls engine)
-  ai_llm.py        # LLM enrichment module (JSON schema output)
-  storage.py       # Phase 1 in-memory store
-  db/              # Phase 2 database layer (added later)
-    db.py
-    orm_models.py
-    repository.py
-
-<img width="1536" height="1024" alt="ChatGPT Image Feb 17, 2026 at 04_26_11 PM" src="https://github.com/user-attachments/assets/739a8d6c-29e9-4f06-9d77-12a06d5b116e" />
+├── models.py        # Enums + Request + AuditEvent dataclasses
+├── engine.py        # State machine + rules + approvals + audit logic
+├── main.py          # FastAPI endpoints (calls engine)
+├── ai_llm.py        # LLM enrichment module (JSON schema output)
+├── storage.py       # Phase 1 in-memory store
+└── db/              # Phase 2 database layer (added later)
+    ├── db.py
+    ├── orm_models.py
+    └── repository.py
+```
+<img width="1536" height="1024" alt="ChatGPT Image Feb 17, 2026 at 04_26_11 PM" src="https://github.com/user-attachments/assets/3d1630ef-57ca-4d72-bba3-89add840a90a" />
 
 
 # Models.py
@@ -65,6 +66,7 @@ handles persistence (memory or DB).
 enriches requests but never replaces deterministic rules.
 
 # Core Workflow Logic
+```text
 States (State Machine)
 A request can only be in one state at a time:
 DRAFT — created, not submitted
@@ -84,12 +86,12 @@ The engine tracks:
 approval_index — which step we’re on
 current_required_role() — who must approve next
 This mimics real enterprise systems where traceability matters.
-
+```
 # AI / LLM Integration
 AI is used for enrichment, not as the source of truth.
 
 # LLM tasks
-Classify request type from free-text (PROCUREMENT / LEAVE / SUPPORT)
-Extract fields when missing (amount, leave days, severity)
-Summarize request for approvers (1–2 sentences)
-Provide a confidence score
+- Classify request type from free-text (PROCUREMENT / LEAVE / SUPPORT)
+- Extract fields when missing (amount, leave days, severity)
+- Summarize request for approvers (1–2 sentences)
+- Provide a confidence score
