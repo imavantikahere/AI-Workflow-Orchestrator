@@ -43,7 +43,10 @@ app/
     db.py
     orm_models.py
     repository.py
-    
+
+<img width="1536" height="1024" alt="ChatGPT Image Feb 17, 2026 at 04_26_11 PM" src="https://github.com/user-attachments/assets/739a8d6c-29e9-4f06-9d77-12a06d5b116e" />
+
+
 # Models.py
 Defines:
 1. The types of users (roles)
