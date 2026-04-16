@@ -106,3 +106,9 @@ AI is used for enrichment, not as the source of truth.
 - Extract fields when missing (amount, leave days, severity)
 - Summarize request for approvers (1–2 sentences)
 - Provide a confidence score
+
+# Project phases
+
+1. In-memory workflow engine for rapid prototyping
+2. Database-backed architecture using SQLAlchemy (designed and partially implemented)
+3. Front interface integration using Streamlit
