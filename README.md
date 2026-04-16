@@ -112,3 +112,32 @@ AI is used for enrichment, not as the source of truth.
 1. In-memory workflow engine for rapid prototyping
 2. Database-backed architecture using SQLAlchemy (designed and partially implemented)
 3. Front interface integration using Streamlit
+
+# How to run
+
+## Run locally
+
+```bash
+python -m venv .venv
+source .venv/bin/activate  # macOS/Linux
+pip install -r requirements.txt
+python run.py
+```
+
+Open Swagger at:
+
+```txt
+http://127.0.0.1:8000/docs
+```
+
+## Test
+
+```bash
+pytest
+```
+
+## Notes
+- The API currently uses in-memory storage for the working flow.
+- A Phase 2 async SQLAlchemy DB layer is included under `app/db/`.
+- To enable real LLM enrichment, set `OPENAI_API_KEY` in your environment.
+
