@@ -16,6 +16,17 @@ This project shows how to embed AI into a real system:
 5. SLA and escalation (enterprise requirement)
 6. LLM used as a support layer (classification/extraction/summarization)
 
+# User Flow Process
+
+* General Flow 
+
+<img width="1000" height="1500" alt="mermaid-diagram" src="https://github.com/user-attachments/assets/c564f34a-098c-4ccc-89a3-b04a1a8a611f" />
+
+* Detailed Flow
+
+<img width="4700" height="4771" alt="mermaid-diagram-2" src="https://github.com/user-attachments/assets/174e7d69-2f3b-4407-b49e-8e909945b00b" />
+
+
 # Tech Stack
 * Core Backend
 1. Python 3.10+
