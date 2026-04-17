@@ -71,47 +71,47 @@ def enrich_request(request_id: str) -> Dict[str, Any]:
 
 def submit_request(request_id: str) -> Dict[str, Any]:
     """
-    Submit the request into approval flow.
+    Submit a request into the approval workflow so that
+    the approval chain gets created.
     """
-    response = requests.post(f"{BASE_URL}/requests/{request_id}/submit", timeout=20)
+    response = requests.post(
+        f"{BASE_URL}/requests/{request_id}/submit",
+        json={"request_id": request_id},
+        timeout=20
+    )
     return _handle_response(response)
 
 
-def approve_request(request_id: str, approver_role: Optional[str] = None) -> Dict[str, Any]:
-    """
-    Approve a request.
-    If your backend expects body data, keep this.
-    If not, you can remove json=payload.
-    """
-    payload = {}
-    if approver_role:
-        payload["approver_role"] = approver_role
-
+def approve_request(request_id: str, actor_name: str, actor_role: str):
     response = requests.post(
         f"{BASE_URL}/requests/{request_id}/approve",
-        json=payload,
+        json={
+            "request_id": request_id,
+            "actor_name": actor_name,
+            "actor_role": actor_role
+        },
         timeout=20
     )
     return _handle_response(response)
 
 
-def reject_request(
-    request_id: str,
-    approver_role: Optional[str] = None,
-    reason: Optional[str] = None
-) -> Dict[str, Any]:
-    """
-    Reject a request.
-    """
-    payload = {}
-    if approver_role:
-        payload["approver_role"] = approver_role
-    if reason:
-        payload["reason"] = reason
-
+def reject_request(request_id: str, actor_name: str, actor_role: str, reason: str):
     response = requests.post(
         f"{BASE_URL}/requests/{request_id}/reject",
-        json=payload,
+        json={
+            "request_id": request_id,
+            "actor_name": actor_name,
+            "actor_role": actor_role,
+            "reason": reason
+        },
         timeout=20
     )
     return _handle_response(response)
+
+def get_audit_logs(request_id: str):
+    response = requests.get(
+        f"{BASE_URL}/requests/{request_id}/audit",
+        timeout=20
+    )
+    return _handle_response(response)
+    
