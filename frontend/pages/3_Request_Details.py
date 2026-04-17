@@ -1,4 +1,5 @@
 import streamlit as st
+from api_client import get_request_by_id, get_audit_logs
 from api_client import (
     get_request_by_id,
     enrich_request,
@@ -84,7 +85,7 @@ if request_data:
                 st.error(str(e))
 
     with c3:
-        approver_role = st.text_input("Approver Role", value="MANAGER")
+        approver_role = st.selectbox("Approver Role", ["SUPPORT_L2", "MANAGER", "DIRECTOR", "FINANCE"])
 
         approve_col, reject_col = st.columns(2)
 
@@ -112,3 +113,23 @@ if request_data:
                     refresh_request()
                 except Exception as e:
                     st.error(str(e))
+
+
+    st.subheader("Audit Logs")
+
+    try:
+        audit_logs = get_audit_logs(request_id.strip())
+    except Exception as e:
+        st.error(f"Could not load audit logs: {e}")
+        audit_logs = []
+
+    if audit_logs:
+        for log in audit_logs:
+            st.markdown("---")
+            st.write(f"**Action:** {log.get('action', '—')}")
+            st.write(f"**Actor Name:** {log.get('actor_name', '—')}")
+            st.write(f"**Actor Role:** {log.get('actor_role', '—')}")
+            st.write(f"**Time:** {log.get('timestamp', '—')}")
+            st.write(f"**Comments:** {log.get('comments', '—')}")
+    else:
+        st.info("No audit logs found for this request.")
