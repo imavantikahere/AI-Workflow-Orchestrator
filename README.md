@@ -1,11 +1,19 @@
 # AI-Workflow-Orchestrator
 A production-style backend system for orchestrating enterprise workflows with multi-step approvals, SLA-based escalation, audit logging, and LLM-powered request enrichment. Built with FastAPI and designed to demonstrate how AI can be embedded into real business processes.
 
-# This project is built in two phases:
-Phase 1: No Database (In-Memory)
-Focus: To understand workflow logic clearly and keep moving fast - I am still learning fundamentals of AI and backent programming. 
-Phase 2: With Database (SQLite/Postgres-ready)
-Focus: Persistence, real audit trails, and production-style architecture - still working on it
+# This project is built in three phases:
+
+1. In-memory workflow engine for rapid prototyping (Completed)
+   No database - only Python data structures for storing in session requests and audit logs
+   Focus: To understand workflow logic clearly and keep moving fast - I am still learning fundamentals of AI and backend programming. 
+2. Database-backed architecture using SQLAlchemy (Completed)
+   Focus: Persistence, real audit trails, and production-style backend architecture with complete manual SwaggerUI testing
+3. Front interface integration using Streamlit (In Progress)
+   Focus: To connect backend with frontend and to create an integrated user friendly system
+
+# System Architecture
+
+<img width="1536" height="1024" alt="ChatGPT Image Feb 17, 2026 at 04_26_11 PM" src="https://github.com/user-attachments/assets/3d1630ef-57ca-4d72-bba3-89add840a90a" />
 
 # Project Components 
 This project shows how to embed AI into a real system:
@@ -26,23 +34,6 @@ This project shows how to embed AI into a real system:
 
 <img width="4700" height="4771" alt="mermaid-diagram-2" src="https://github.com/user-attachments/assets/174e7d69-2f3b-4407-b49e-8e909945b00b" />
 
-
-# Tech Stack
-* Core Backend
-1. Python 3.10+
-2. FastAPI — REST API + Swagger UI at /docs
-3. Pydantic — request/response validation
-* AI / LLM Layer
-1. OpenAI (Responses API) or Azure OpenAI (swappable provider)
-2. Structured output enforced with JSON schema (so the backend doesn’t break)
-   
-* Database (Phase 2)
-1. SQLite (local dev) using:
-2. SQLAlchemy (async) + aiosqlite
-
-Testing (optional but recommended)
-pytest + httpx for API tests
-
 # Project Structure
 ```text
 app/
@@ -51,12 +42,11 @@ app/
 ├── main.py          # FastAPI endpoints (calls engine)
 ├── ai_llm.py        # LLM enrichment module (JSON schema output)
 ├── storage.py       # Phase 1 in-memory store
-└── db/              # Phase 2 database layer (added later)
+└── db/              # Phase 2 database layer 
     ├── db.py
     ├── orm_models.py
     └── repository.py
 ```
-<img width="1536" height="1024" alt="ChatGPT Image Feb 17, 2026 at 04_26_11 PM" src="https://github.com/user-attachments/assets/3d1630ef-57ca-4d72-bba3-89add840a90a" />
 
 
 # Models.py
@@ -107,11 +97,22 @@ AI is used for enrichment, not as the source of truth.
 - Summarize request for approvers (1–2 sentences)
 - Provide a confidence score
 
-# Project phases
+# Tech Stack
+* Core Backend
+1. Python 3.10+
+2. FastAPI — REST API + Swagger UI at /docs
+3. Pydantic — request/response validation
+* AI / LLM Layer
+1. OpenAI (Responses API) or Azure OpenAI (swappable provider)
+2. Structured output enforced with JSON schema (so the backend doesn’t break)
+   
+* Database (Phase 2)
+1. SQLite (local dev) using:
+2. SQLAlchemy (async) + aiosqlite
 
-1. In-memory workflow engine for rapid prototyping
-2. Database-backed architecture using SQLAlchemy (designed and partially implemented)
-3. Front interface integration using Streamlit
+Testing (optional but recommended)
+pytest + httpx for API tests
+
 
 # How to run the Project
 
@@ -145,13 +146,21 @@ export LLM_PROVIDER=groq
 export GROQ_API_KEY=your_api_key
 ```
 ## 5. Run the FASTAPI server
+```code
 uvicorn app.main:app --reload
+```
 
-## 6. Access the API
+## 6. Access the Backend API
 
 Swagger UI (Interactive API Docs): http://127.0.0.1:8000/docs
 
-## 7. Accessing the DB
+## 7. Acess the Streamlit frontend 
+
+```code
+streamlit run frontend/streamlit_app.py
+```
+
+## 8. Accessing the DB
 
 On VStudio, install SQLite Viewer extension and you can view all request entries and audit logs on workflow.db, right below run.py.
 
