@@ -14,13 +14,11 @@ st.info(f"Connected API base URL: {BASE_URL}")
 
 st.markdown(
     """
-### What you can do here
-- Create workflow requests
-- View all requests
-- Open a request by ID
-- Trigger AI enrichment
-- Submit into approval flow
-- Approve or reject requests
+### Available pages
+- Create Request
+- View Requests
+- Request Details
+- Approval Dashboard
 """
 )
 
