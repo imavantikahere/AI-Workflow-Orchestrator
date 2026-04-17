@@ -110,3 +110,92 @@ class WorkflowRepository:
             )
             for row in rows
         ]
+    async def update_request_record(self, request: WorkflowRequest) -> WorkflowRequest:
+        result = await self.session.execute(
+            select(WorkflowRequestORM).where(WorkflowRequestORM.id == request.id)
+        )
+        row = result.scalar_one_or_none()
+
+        if row is None:
+            row = request_to_orm(request)
+            self.session.add(row)
+        else:
+            row.title = request.title
+            row.description = request.description
+            row.created_by = request.created_by
+            row.request_type = request.request_type.value
+            row.state = request.state.value
+            row.amount = request.amount
+            row.leave_days = request.leave_days
+            row.severity = request.severity
+            row.summary = request.summary
+            row.ai_confidence = request.ai_confidence
+            row.approval_chain = json.dumps([r.value for r in request.approval_chain])
+            row.approval_index = request.approval_index
+            row.created_at = request.created_at
+            row.updated_at = request.updated_at
+            row.sla_deadline = request.sla_deadline
+
+        await self.session.commit()
+        return request
+
+    async def enrich_request(self, request_id: str) -> WorkflowRequest:
+        request = await self.get_request(request_id)
+        enrichment = ai_service.enrich_request(request.title, request.description)
+
+        request_type_value = enrichment.get("request_type", "UNKNOWN")
+        try:
+            request_type_enum = RequestType(request_type_value)
+        except ValueError:
+            request_type_enum = RequestType.UNKNOWN
+
+        if request.request_type == RequestType.UNKNOWN:
+            request.request_type = request_type_enum
+
+        amount = enrichment.get("amount")
+        if request.amount is None and isinstance(amount, (int, float)):
+            request.amount = float(amount)
+
+        leave_days = enrichment.get("leave_days")
+        if request.leave_days is None and isinstance(leave_days, int):
+            request.leave_days = leave_days
+
+        sev = enrichment.get("severity")
+        if request.severity is None:
+            if isinstance(sev, str):
+                sev_map = {"low": 1, "medium": 3, "high": 5}
+                sev = sev_map.get(sev.lower())
+
+            if isinstance(sev, (int, float)):
+                sev = int(sev)
+                if 1 <= sev <= 5:
+                    request.severity = sev
+
+        summary = enrichment.get("summary")
+        if isinstance(summary, str) and summary.strip():
+            request.summary = summary
+        else:
+            request.summary = f"Request received: {request.title}. Review details and route for approval."
+
+        confidence = enrichment.get("confidence")
+        if isinstance(confidence, (int, float)):
+            request.ai_confidence = max(0.0, min(1.0, float(confidence)))
+        else:
+            request.ai_confidence = 0.45
+
+        request.updated_at = utc_now()
+
+        await self.repo.update_request_record(request)
+
+        await self._log_event(
+            request_id=request.id,
+            actor_name="SYSTEM_AI",
+            actor_role=Role.ADMIN,
+            action=AuditAction.AI_ENRICHED,
+            from_state=request.state,
+            to_state=request.state,
+            comments="Request enriched using AI",
+            metadata=enrichment,
+        )
+        return request
+
