@@ -4,8 +4,10 @@ from datetime import timedelta
 from typing import List
 
 from fastapi import HTTPException
+from sqlalchemy.ext.asyncio import AsyncSession
 
 from app.ai_llm import ai_service
+from app.db.repository import WorkflowRepository
 from app.models import (
     AuditAction,
     AuditEvent,
@@ -20,11 +22,15 @@ from app.models import (
     new_request_id,
     utc_now,
 )
-from app.storage import store
+
 
 
 class WorkflowEngine:
-    def create_request(self, payload: WorkflowRequestCreate) -> WorkflowRequest:
+    def __init__(self, session: AsyncSession) -> None:
+        self.repo = WorkflowRepository(session)
+
+
+    async def create_request(self, payload: WorkflowRequestCreate) -> WorkflowRequest:
         request = WorkflowRequest(
             id=new_request_id(),
             title=payload.title,
@@ -35,8 +41,10 @@ class WorkflowEngine:
             leave_days=payload.leave_days,
             severity=payload.severity,
         )
-        store.save_request(request)
-        self._log_event(
+
+        await self.repo.create_request(request)
+
+        await self._log_event(
             request_id=request.id,
             actor_name=payload.created_by,
             actor_role=Role.EMPLOYEE,
@@ -47,17 +55,18 @@ class WorkflowEngine:
         )
         return request
 
-    def list_requests(self) -> List[WorkflowRequest]:
-        return store.list_requests()
+    async def list_requests(self) -> List[WorkflowRequest]:
+        return await self.repo.list_requests()
 
-    def get_request(self, request_id: str) -> WorkflowRequest:
-        request = store.get_request(request_id)
+    async def get_request(self, request_id: str) -> WorkflowRequest:
+        request = await self.repo.get_request(request_id)
         if not request:
             raise HTTPException(status_code=404, detail="Request not found")
         return request
 
-    def update_request(self, request_id: str, payload: WorkflowRequestUpdate) -> WorkflowRequest:
-        request = self.get_request(request_id)
+    async def update_request(self, request_id: str, payload: WorkflowRequestUpdate) -> WorkflowRequest:
+        request = await self.get_request(request_id)
+
         if request.state != RequestState.DRAFT:
             raise HTTPException(status_code=400, detail="Only DRAFT requests can be edited")
 
@@ -67,9 +76,9 @@ class WorkflowEngine:
             setattr(request, field, value)
 
         request.updated_at = utc_now()
-        store.save_request(request)
+        await self.repo.update_request_record(request)
 
-        self._log_event(
+        await self._log_event(
             request_id=request.id,
             actor_name=request.created_by,
             actor_role=Role.EMPLOYEE,
@@ -80,37 +89,55 @@ class WorkflowEngine:
         )
         return request
 
-    def enrich_request(self, request_id: str) -> WorkflowRequest:
-        request = self.get_request(request_id)
+    async def enrich_request(self, request_id: str) -> WorkflowRequest:
+        request = await self.get_request(request_id)
         enrichment = ai_service.enrich_request(request.title, request.description)
 
-        if request.request_type == RequestType.UNKNOWN:
-            request.request_type = RequestType(enrichment["request_type"])
-        if request.amount is None and enrichment.get("amount") is not None:
-            request.amount = enrichment["amount"]
-        if request.leave_days is None and enrichment.get("leave_days") is not None:
-            request.leave_days = enrichment["leave_days"]
-        if request.severity is None and enrichment.get("severity") is not None:
-            
-            
-            if request.severity is None:
-                sev = enrichment.get("severity")
+        request_type_value = enrichment.get("request_type", "UNKNOWN")
+        try:
+            request_type_enum = RequestType(request_type_value)
+        except ValueError:
+            request_type_enum = RequestType.UNKNOWN
 
+        if request.request_type == RequestType.UNKNOWN:
+            request.request_type = request_type_enum
+
+        amount = enrichment.get("amount")
+        if request.amount is None and isinstance(amount, (int, float)):
+            request.amount = float(amount)
+
+        leave_days = enrichment.get("leave_days")
+        if request.leave_days is None and isinstance(leave_days, int):
+            request.leave_days = leave_days
+
+        sev = enrichment.get("severity")
+        if request.severity is None:
             if isinstance(sev, str):
                 sev_map = {"low": 1, "medium": 3, "high": 5}
                 sev = sev_map.get(sev.lower())
 
-            if isinstance(sev, int) and 1 <= sev <= 5:
-                request.severity = sev
+            if isinstance(sev, (int, float)):
+                sev = int(sev)
+                if 1 <= sev <= 5:
+                    request.severity = sev
 
-            
+        summary = enrichment.get("summary")
+        if isinstance(summary, str) and summary.strip():
+            request.summary = summary
+        else:
+            request.summary = f"Request received: {request.title}. Review details and route for approval."
 
-        request.summary = enrichment.get("summary")
-        request.ai_confidence = enrichment.get("confidence")
+        confidence = enrichment.get("confidence")
+        if isinstance(confidence, (int, float)):
+            request.ai_confidence = max(0.0, min(1.0, float(confidence)))
+        else:
+            request.ai_confidence = 0.45
+
         request.updated_at = utc_now()
 
-        store.save_request(request)
-        self._log_event(
+        await self.repo.update_request_record(request)
+
+        await self._log_event(
             request_id=request.id,
             actor_name="SYSTEM_AI",
             actor_role=Role.ADMIN,
@@ -121,15 +148,15 @@ class WorkflowEngine:
             metadata=enrichment,
         )
         return request
+    async def submit_request(self, request_id: str) -> WorkflowRequest:
+        request = await self.get_request(request_id)
 
-    def submit_request(self, request_id: str) -> WorkflowRequest:
-        request = self.get_request(request_id)
         if request.state != RequestState.DRAFT:
             raise HTTPException(status_code=400, detail="Only DRAFT requests can be submitted")
 
         if request.request_type == RequestType.UNKNOWN:
-            self.enrich_request(request_id)
-            request = self.get_request(request_id)
+            await self.enrich_request(request_id)
+            request = await self.get_request(request_id)
 
         request.approval_chain = self._build_approval_chain(request)
         if not request.approval_chain:
@@ -140,8 +167,9 @@ class WorkflowEngine:
         request.updated_at = utc_now()
         request.sla_deadline = utc_now() + timedelta(hours=24)
 
-        store.save_request(request)
-        self._log_event(
+        await self.repo.update_request_record(request)
+
+        await self._log_event(
             request_id=request.id,
             actor_name=request.created_by,
             actor_role=Role.EMPLOYEE,
@@ -152,8 +180,9 @@ class WorkflowEngine:
         )
         return request
 
-    def approve_request(self, request_id: str, payload: DecisionPayload) -> WorkflowRequest:
-        request = self.get_request(request_id)
+    async def approve_request(self, request_id: str, payload: DecisionPayload) -> WorkflowRequest:
+        request = await self.get_request(request_id)
+
         if request.state != RequestState.IN_REVIEW:
             raise HTTPException(status_code=400, detail="Request is not under review")
 
@@ -175,9 +204,9 @@ class WorkflowEngine:
             request.sla_deadline = utc_now() + timedelta(hours=24)
 
         request.updated_at = utc_now()
-        store.save_request(request)
+        await self.repo.update_request_record(request)
 
-        self._log_event(
+        await self._log_event(
             request_id=request.id,
             actor_name=payload.actor_name,
             actor_role=payload.actor_role,
@@ -189,8 +218,9 @@ class WorkflowEngine:
         )
         return request
 
-    def reject_request(self, request_id: str, payload: DecisionPayload) -> WorkflowRequest:
-        request = self.get_request(request_id)
+    async def reject_request(self, request_id: str, payload: DecisionPayload) -> WorkflowRequest:
+        request = await self.get_request(request_id)
+
         if request.state != RequestState.IN_REVIEW:
             raise HTTPException(status_code=400, detail="Request is not under review")
 
@@ -205,9 +235,10 @@ class WorkflowEngine:
         request.state = RequestState.REJECTED
         request.updated_at = utc_now()
         request.sla_deadline = None
-        store.save_request(request)
 
-        self._log_event(
+        await self.repo.update_request_record(request)
+
+        await self._log_event(
             request_id=request.id,
             actor_name=payload.actor_name,
             actor_role=payload.actor_role,
@@ -218,18 +249,29 @@ class WorkflowEngine:
         )
         return request
 
-    def escalate_request(self, request_id: str, actor_name: str, actor_role: Role, reason: str) -> WorkflowRequest:
-        request = self.get_request(request_id)
+    async def escalate_request(
+        self,
+        request_id: str,
+        actor_name: str,
+        actor_role: Role,
+        reason: str,
+    ) -> WorkflowRequest:
+        request = await self.get_request(request_id)
+
         if request.state not in {RequestState.IN_REVIEW, RequestState.SUBMITTED}:
-            raise HTTPException(status_code=400, detail="Only submitted or in-review requests can be escalated")
+            raise HTTPException(
+                status_code=400,
+                detail="Only submitted or in-review requests can be escalated",
+            )
 
         from_state = request.state
         request.state = RequestState.ESCALATED
         request.updated_at = utc_now()
         request.sla_deadline = None
-        store.save_request(request)
 
-        self._log_event(
+        await self.repo.update_request_record(request)
+
+        await self._log_event(
             request_id=request.id,
             actor_name=actor_name,
             actor_role=actor_role,
@@ -240,28 +282,30 @@ class WorkflowEngine:
         )
         return request
 
-    def auto_escalate_breached_requests(self) -> List[WorkflowRequest]:
-        escalated = []
+    async def auto_escalate_breached_requests(self) -> List[WorkflowRequest]:
+        escalated: List[WorkflowRequest] = []
         now = utc_now()
-        for request in store.list_requests():
+
+        all_requests = await self.repo.list_requests()
+        for request in all_requests:
             if (
                 request.state == RequestState.IN_REVIEW
                 and request.sla_deadline is not None
                 and request.sla_deadline < now
             ):
-                escalated.append(
-                    self.escalate_request(
-                        request_id=request.id,
-                        actor_name="SYSTEM_SLA",
-                        actor_role=Role.ADMIN,
-                        reason="Escalated automatically due to SLA breach",
-                    )
+                escalated_request = await self.escalate_request(
+                    request_id=request.id,
+                    actor_name="SYSTEM_SLA",
+                    actor_role=Role.ADMIN,
+                    reason="Escalated automatically due to SLA breach",
                 )
+                escalated.append(escalated_request)
+
         return escalated
 
-    def get_audit_log(self, request_id: str):
-        self.get_request(request_id)
-        return store.get_audit_events(request_id)
+    async def get_audit_log(self, request_id: str):
+        await self.get_request(request_id)
+        return await self.repo.get_audit_events(request_id)
 
     def _build_approval_chain(self, request: WorkflowRequest) -> List[Role]:
         if request.request_type == RequestType.PROCUREMENT:
@@ -281,7 +325,7 @@ class WorkflowEngine:
 
         return []
 
-    def _log_event(
+    async def _log_event(
         self,
         request_id: str,
         actor_name: str,
@@ -304,7 +348,4 @@ class WorkflowEngine:
             comments=comments,
             metadata=metadata or {},
         )
-        store.add_audit_event(event)
-
-
-engine = WorkflowEngine()
+        await self.repo.add_audit_event(event)
