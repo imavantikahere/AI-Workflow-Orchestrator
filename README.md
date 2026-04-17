@@ -113,31 +113,63 @@ AI is used for enrichment, not as the source of truth.
 2. Database-backed architecture using SQLAlchemy (designed and partially implemented)
 3. Front interface integration using Streamlit
 
-# How to run
+# How to run the Project
 
-## Run locally
+## 1. Clone the repository
+```code
+git clone https://github.com/imavantikahere/ai-workflow-orchestrator.git
+cd ai-workflow-orchestrator
+```
 
-```bash
-python -m venv .venv
-source .venv/bin/activate  # macOS/Linux
+## 2. Create a virtual environment
+```code
+python -m venv venv
+source venv/bin/activate   # Mac/Linux
+venv\Scripts\activate      # Windows
+```
+
+## 3. Install dependencies
+```code
 pip install -r requirements.txt
-python run.py
 ```
 
-Open Swagger at:
+## 4. Set environment variables (optional but recommended)
+```code
+For LLM integration
+export LLM_PROVIDER=openai
+export OPENAI_API_KEY=your_api_key
+```
+```code
+OR for Groq:
+export LLM_PROVIDER=groq
+export GROQ_API_KEY=your_api_key
+```
+## 5. Run the FASTAPI server
+uvicorn app.main:app --reload
 
-```txt
-http://127.0.0.1:8000/docs
+## 6. Access the API
+
+Swagger UI (Interactive API Docs): http://127.0.0.1:8000/docs
+
+## 7. Accessing the DB
+
+On VStudio, install SQLite Viewer extension and you can view all request entries and audit logs on workflow.db, right below run.py.
+
+Alternatively, on terminal/bash:
+
+```code
+sqlite3 workflow.db
+
+SELECT * FROM audit_events
+SELECT * FROM workflow_requests
+
 ```
 
-## Test
 
-```bash
-pytest
-```
+
+
 
 ## Notes
-- The API currently uses in-memory storage for the working flow.
-- A Phase 2 async SQLAlchemy DB layer is included under `app/db/`.
+- Phase 2 has been completed. Phase 3 in progress to add frontend layer.
 - To enable real LLM enrichment, set `OPENAI_API_KEY` in your environment.
 
