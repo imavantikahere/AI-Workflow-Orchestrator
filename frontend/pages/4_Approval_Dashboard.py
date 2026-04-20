@@ -192,7 +192,6 @@ with c2:
 
     actor_name = st.text_input("Actor Name")
     actor_role = st.selectbox("Actor Role", ["SUPPORT_L2", "MANAGER", "DIRECTOR", "FINANCE"])
-    #actor_role = st.text_input("Actor Role", value=default_role)
     reject_reason = st.text_area("Reject Reason", value="Does not meet approval criteria")
     b1, b2 = st.columns(2)
 
