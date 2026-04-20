@@ -114,4 +114,5 @@ def get_audit_logs(request_id: str):
         timeout=20
     )
     return _handle_response(response)
+        
     
