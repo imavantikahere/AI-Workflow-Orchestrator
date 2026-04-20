@@ -4,7 +4,7 @@ from api_client import get_all_requests
 
 st.title("All Requests")
 
-if st.button("Refresh Requests"):
+if st.button("Refresh Requests", type="secondary"):
     st.session_state["refresh_requests"] = True
 
 try:
