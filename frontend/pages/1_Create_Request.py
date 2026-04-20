@@ -2,13 +2,16 @@ import streamlit as st
 from api_client import create_request, submit_request
 
 st.title("Create Request")
+st.image
 
 REQUEST_TYPES = [
     "PROCUREMENT",
     "LEAVE",
     "SUPPORT",
+    "FINANCE",
+    "HR",
     "UNKNOWN"
-]
+] 
 
 with st.form("create_request_form"):
     title = st.text_input("Title")
@@ -40,6 +43,11 @@ if submitted:
             payload["leave_days"] = leave_days
         elif request_type == "SUPPORT" and severity:
             payload["severity"] = severity
+        elif request_type == "FINANCE":
+            payload["amount"] = amount
+        #elif request_type == "HR":
+            #pass  # No additional fields needed for HR requests
+
 
         # Step 1: create request
         create_result = create_request(payload)
