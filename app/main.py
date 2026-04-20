@@ -164,9 +164,3 @@ async def get_audit_log(
     workflow_engine = WorkflowEngine(db)
     events = await workflow_engine.get_audit_log(request_id)
     return [AuditEventResponse.from_entity(e) for e in events]
-
-
-@app.get("/requests/{request_id}/audit", response_model=List[AuditEventResponse])
-def get_audit_log(request_id: str):
-    events = engine.get_audit_log(request_id)
-    return [AuditEventResponse.from_entity(e) for e in events]
