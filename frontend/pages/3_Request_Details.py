@@ -85,7 +85,7 @@ if request_data:
                 st.error(str(e))
 
     with c3:
-        approver_role = st.selectbox("Approver Role", ["SUPPORT_L2", "MANAGER", "DIRECTOR", "FINANCE"])
+        approver_role = st.selectbox("Approver Role", ["SUPPORT_L2", "MANAGER", "DIRECTOR", "FINANCE", "HR"])
 
         approve_col, reject_col = st.columns(2)
 
