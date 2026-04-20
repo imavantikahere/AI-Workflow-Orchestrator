@@ -1,12 +1,12 @@
 from __future__ import annotations
-
+from app.ai_llm import ai_service
 from datetime import timedelta
 from typing import List
 
 from fastapi import HTTPException
 from sqlalchemy.ext.asyncio import AsyncSession
 
-from app.ai_llm import ai_service
+#from app.ai_llm import ai_service
 from app.db.repository import WorkflowRepository
 from app.models import (
     AuditAction,
@@ -320,6 +320,12 @@ class WorkflowEngine:
             if (request.severity or 1) >= 4:
                 return [Role.SUPPORT_L2, Role.MANAGER]
             return [Role.SUPPORT_L2]
+        
+        if request.request_type == RequestType.FINANCE:
+            return [Role.MANAGER, Role.FINANCE]
+
+        if request.request_type == RequestType.HR:
+            return [Role.HR]
 
         return []
 
