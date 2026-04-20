@@ -1,5 +1,6 @@
 import pandas as pd
 import streamlit as st
+import matplotlib.pyplot as plt
 
 from api_client import get_all_requests, approve_request, reject_request
 
@@ -104,6 +105,17 @@ m5.metric("Draft", draft_requests)
 st.divider()
 
 # -----------------------------
+# Charts
+# -----------------------------
+s1, s2 = st.columns(2)
+with s1:
+    st.area_chart(df["state"].value_counts(), color="#905D5D")
+with s2:
+    st.bar_chart(df["request_type"].value_counts(), color="#5D7890")
+
+st.bar_chart(df["current_required_role"].value_counts(), color="#905D8C", )
+
+# -----------------------------
 # Filters
 # -----------------------------
 f1, f2, f3 = st.columns(3)
@@ -179,20 +191,20 @@ with c1:
     st.write(f"**Created By:** {selected_row.get('created_by', '—')}")
     st.write(f"**Request Type:** {selected_row.get('request_type', '—')}")
     st.write(f"**State:** {state_badge(selected_row.get('state'))}")
-    st.write(f"**Current Required Role:** {selected_row.get('current_required_role') or '—'}")
-    st.write(f"**Approval Progress:** {selected_row.get('approval_progress')}")
-    st.write(f"**Approval Chain:** {selected_row.get('approval_chain_display')}")
-    st.write(f"**Amount:** {selected_row.get('amount')}")
-    st.write(f"**Leave Days:** {selected_row.get('leave_days')}")
-    st.write(f"**Severity:** {selected_row.get('severity')}")
+    st.write(f"**Current Required Role:** {selected_row.get('current_required_role') or "—"}")
+    st.write(f"**Approval Progress:** {selected_row.get('approval_progress') or '—'}")
+    st.write(f"**Approval Chain:** {selected_row.get('approval_chain_display') or '—'}")
+    st.write(f"**Amount:** {selected_row.get('amount') or '—'}")
+    st.write(f"**Leave Days:** {selected_row.get('leave_days') or '—'}")
+    st.write(f"**Severity:** {selected_row.get('severity') or '—'}")
 
 with c2:
     st.markdown("### Approver Action")
     default_role = selected_row.get("current_required_role") or "MANAGER"
 
     actor_name = st.text_input("Actor Name")
-    actor_role = st.selectbox("Actor Role", ["SUPPORT_L2", "MANAGER", "DIRECTOR", "FINANCE"])
-    reject_reason = st.text_area("Reject Reason", value="Does not meet approval criteria")
+    actor_role = st.selectbox("Actor Role", ["SUPPORT_L2", "MANAGER", "DIRECTOR", "FINANCE", "HR"])
+    reject_reason = st.text_area("Reject Reason")
     b1, b2 = st.columns(2)
 
     with b1:
