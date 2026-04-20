@@ -69,7 +69,7 @@ Return JSON in exactly this format:
 }}
 
 Allowed request_type values:
-PROCUREMENT, LEAVE, SUPPORT, UNKNOWN
+PROCUREMENT, LEAVE, SUPPORT, FINANCE, HR,UNKNOWN
 
 IMPORTANT:
 - severity must be an INTEGER from 1 to 5
@@ -77,6 +77,7 @@ IMPORTANT:
 - amount must be a number or null
 - leave_days must be an integer or null
 - confidence must be a number between 0 and 1
+- Asking for leave and days off will be a LEAVE request but anything related to wellbeing and HR is HR
 - return valid JSON only
 """.strip()
 
@@ -99,7 +100,7 @@ IMPORTANT:
 
             # Normalize request_type
             request_type = str(parsed.get("request_type", "UNKNOWN")).upper()
-            if request_type not in {"PROCUREMENT", "LEAVE", "SUPPORT", "UNKNOWN"}:
+            if request_type not in {"PROCUREMENT", "LEAVE", "SUPPORT", "FINANCE", "HR", "UNKNOWN"}:
                 request_type = "UNKNOWN"
 
             # Normalize amount
@@ -189,6 +190,10 @@ IMPORTANT:
             request_type = RequestType.LEAVE.value
         elif any(word in text for word in ["incident", "issue", "bug", "support", "outage", "access", "deployment", "dashboard"]):
             request_type = RequestType.SUPPORT.value
+        elif any(word in text for word in ["finance", "budget", "invoice", "payment", "expense", "accounts", "salary"]):
+            request_type = RequestType.FINANCE.value
+        elif any(word in text for word in ["hr", "human resources", "payroll", "benefits", "wellbeing", "harassment", "safety", "onboarding", "policy"]):
+            request_type = RequestType.HR.value
 
         return {
             "request_type": request_type,
