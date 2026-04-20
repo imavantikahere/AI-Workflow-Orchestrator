@@ -184,3 +184,4 @@ def new_request_id() -> str:
 
 def new_audit_id() -> str:
     return f"AUD-{uuid4().hex[:10].upper()}"
+
