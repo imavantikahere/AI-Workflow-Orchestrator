@@ -8,8 +8,9 @@ A production-style backend system for orchestrating enterprise workflows with mu
    Focus: To understand workflow logic clearly and keep moving fast - I am still learning fundamentals of AI and backend programming. 
 2. Database-backed architecture using SQLAlchemy (Completed)
    Focus: Persistence, real audit trails, and production-style backend architecture with complete manual SwaggerUI testing
-3. Front interface integration using Streamlit (In Progress)
+3. Front interface integration using Streamlit (Completed)
    Focus: To connect backend with frontend and to create an integrated user friendly system
+4. Deployment using cloud based service (In Progress)
 
 # System Architecture
 
@@ -30,41 +31,40 @@ This project shows how to embed AI into a real system:
 
 <img width="1000" height="1500" alt="mermaid-diagram" src="https://github.com/user-attachments/assets/c564f34a-098c-4ccc-89a3-b04a1a8a611f" />
 
-* Detailed Flow
-
-<img width="4700" height="4771" alt="mermaid-diagram-2" src="https://github.com/user-attachments/assets/174e7d69-2f3b-4407-b49e-8e909945b00b" />
-
 # Project Structure
 ```text
-app/
-├── models.py        # Enums + Request + AuditEvent dataclasses
-├── engine.py        # State machine + rules + approvals + audit logic
-├── main.py          # FastAPI endpoints (calls engine)
-├── ai_llm.py        # LLM enrichment module (JSON schema output)
-├── storage.py       # Phase 1 in-memory store
-└── db/              # Phase 2 database layer 
-    ├── db.py
-    ├── orm_models.py
-    └── repository.py
+AI-Workflow-Orchestrator/
+│
+├── app/                        # Backend (FastAPI)
+│   ├── main.py                # Entry point (API routes)
+│   ├── models.py              # Data models (Data Structures)
+│   ├── engine.py              # Workflow engine (approval logic)
+│   ├── ai_llm.py              # LLM enrichment (classification, summary)
+│   ├── storage.py             # In-memory storage (for phase 1)
+│   │
+│   └── db/                    # Database layer (for phase 2)
+│       ├── db.py              # DB connection setup
+│       ├── orm_models.py      # SQLAlchemy models
+│       └── repository.py      # DB operations (CRUD, audit logs)
+│
+├── frontend/                  # Streamlit frontend
+│   ├── streamlit_app.py       # Main app entry (landing page)
+│   ├── api_client.py          # Calls for FastAPI backend
+│   │
+│   └── pages/                 # Multi-page UI
+│       ├── 1_Create_Request.py
+│       ├── 2_View_Requests.py
+│       ├── 3_Request_Details.py
+│       └── 4_Approval_Dashboard.py
+│
+│
+├── .streamlit/                # UI config
+│   └── config.toml           # Theme settings
+│
+├── requirements.txt          # Dependencies
+├── README.md                 # Project documentation
+└── .gitignore
 ```
-
-
-# Models.py
-Defines:
-1. The types of users (roles)
-2. The types of requests
-3. The states a request can be in
-4. The shape of a request object
-5. The shape of an audit log entry
-
-# Engine.py
-contains business logic and validates transitions.
-
-# Storage 
-handles persistence (memory or DB).
-
-# AI module 
-enriches requests but never replaces deterministic rules.
 
 # Core Workflow Logic
 ```text
@@ -92,7 +92,7 @@ This mimics real enterprise systems where traceability matters.
 AI is used for enrichment, not as the source of truth.
 
 # LLM tasks
-- Classify request type from free-text (PROCUREMENT / LEAVE / SUPPORT)
+- Classify request type from free-text (PROCUREMENT / LEAVE / SUPPORT / HR / FINANCE)
 - Extract fields when missing (amount, leave days, severity)
 - Summarize request for approvers (1–2 sentences)
 - Provide a confidence score
