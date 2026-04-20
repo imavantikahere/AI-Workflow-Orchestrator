@@ -14,7 +14,7 @@ class Role(str, Enum):
     MANAGER = "MANAGER"
     FINANCE = "FINANCE"
     DIRECTOR = "DIRECTOR"
-    HR = "HR"
+    HR= "HR"
     SUPPORT_L2 = "SUPPORT_L2"
     ADMIN = "ADMIN"
 
@@ -23,6 +23,8 @@ class RequestType(str, Enum):
     PROCUREMENT = "PROCUREMENT"
     LEAVE = "LEAVE"
     SUPPORT = "SUPPORT"
+    FINANCE = "FINANCE"
+    HR = "HR"
     UNKNOWN = "UNKNOWN"
 
 
