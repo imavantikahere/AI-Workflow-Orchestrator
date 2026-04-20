@@ -7,8 +7,8 @@ st.set_page_config(
     layout="wide"
 )
 
-st.title("AI Workflow Frontend")
-st.caption("Streamlit UI for your FastAPI-based workflow engine")
+st.title("AI Workflow Orchestrator - Streamlit Frontend")
+st.caption("Streamlit UI for the FastAPI-based workflow engine")
 
 st.info(f"Connected API base URL: {BASE_URL}")
 
