@@ -1,10 +1,18 @@
-# AI-Workflow-Orchestrator
+# AI Workflow Orchestrator
 
 An end-to-end production level AI-powered workflow management system that automates request classification, approval routing, and decision-making using Large Language Models. It is designed to demonstrate how AI can be embedded into real business processes.
 
 
 🔗 **Live Demo (Frontend):** https://ai-workflow-orchestrator-avantika.streamlit.app  
 🔗 **Backend API (SwaggerUI):** https://ai-workflow-orchestrator.onrender.com/docs
+
+
+
+<p>
+ <img width="49%" alt="Screenshot 2026-04-21 at 1 13 14 PM" src="https://github.com/user-attachments/assets/443ee8c7-6714-4811-8350-3db6a460456b" /> 
+<img width="49%" alt="Screenshot 2026-04-21 at 1 15 55 PM" src="https://github.com/user-attachments/assets/b836fc6e-0ecf-4679-8465-748d044056bb" />
+</p>
+
 
 
 ## Features
