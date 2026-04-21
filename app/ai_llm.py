@@ -1,3 +1,14 @@
+'''This file is the AI enrichment layer. Its job is to take a workflow request’s title and description, send them to an LLM when configured, clean the returned JSON, and hand back
+structured enrichment data such as:
+request_type
+amount
+leave_days
+severity
+summary
+confidence
+If a real LLM is not configured or fails, it falls back to a keyword-based rule system.'''
+
+
 from __future__ import annotations
 
 import json
