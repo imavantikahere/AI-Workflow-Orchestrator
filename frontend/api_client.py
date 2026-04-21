@@ -4,7 +4,9 @@ from typing import Any, Dict, Optional
 import requests
 
 
-BASE_URL = os.getenv("API_BASE_URL", "http://127.0.0.1:8000")
+#BASE_URL = os.getenv("API_BASE_URL", "http://127.0.0.1:8000")
+BASE_URL = os.getenv("API_BASE_URL", "https://ai-workflow-orchestrator.onrender.com")  #API deployed
+
 
 
 def _handle_response(response: requests.Response) -> Any:
