@@ -1,3 +1,14 @@
+'''models.py is the data-definition file for the project. It defines:
+the allowed roles
+the allowed request types
+the workflow states
+the audit actions
+the input models for API requests
+the internal dataclass objects used by the workflow engine
+the response models sent back by FastAPI
+helper functions for generating IDs and timestamps
+'''
+
 from __future__ import annotations
 
 from dataclasses import dataclass, field
@@ -8,7 +19,7 @@ from uuid import uuid4
 
 from pydantic import BaseModel, Field, field_validator
 
-
+#These are the different roles a user can have while using the system
 class Role(str, Enum):
     EMPLOYEE = "EMPLOYEE"
     MANAGER = "MANAGER"
@@ -18,7 +29,7 @@ class Role(str, Enum):
     SUPPORT_L2 = "SUPPORT_L2"
     ADMIN = "ADMIN"
 
-
+#The requests can be classfied into Prcourement, Leave, Support, Finance, HR. UNKNOWN is for AI classification
 class RequestType(str, Enum):
     PROCUREMENT = "PROCUREMENT"
     LEAVE = "LEAVE"
@@ -27,7 +38,7 @@ class RequestType(str, Enum):
     HR = "HR"
     UNKNOWN = "UNKNOWN"
 
-
+#The request can go through different statuses
 class RequestState(str, Enum):
     DRAFT = "DRAFT"
     SUBMITTED = "SUBMITTED"
@@ -36,7 +47,7 @@ class RequestState(str, Enum):
     REJECTED = "REJECTED"
     ESCALATED = "ESCALATED"
 
-
+#The audit holds different status of the logs
 class AuditAction(str, Enum):
     CREATED = "CREATED"
     UPDATED = "UPDATED"
@@ -50,7 +61,9 @@ class AuditAction(str, Enum):
 def utc_now() -> datetime:
     return datetime.now(timezone.utc)
 
+#Pydantic models to describe data schemas for the API
 
+#This is the input schema used when creating a new request through the API.
 class WorkflowRequestCreate(BaseModel):
     title: str = Field(..., min_length=3, max_length=200)
     description: str = Field(..., min_length=5, max_length=5000)
@@ -65,7 +78,7 @@ class WorkflowRequestCreate(BaseModel):
     def strip_text(cls, v: str) -> str:
         return v.strip()
 
-
+#This is the input schema used when updating a request through the API.
 class WorkflowRequestUpdate(BaseModel):
     title: Optional[str] = Field(default=None, min_length=3, max_length=200)
     description: Optional[str] = Field(default=None, min_length=5, max_length=5000)
@@ -179,11 +192,11 @@ class AuditEventResponse(BaseModel):
     def from_entity(cls, event: AuditEvent) -> "AuditEventResponse":
         return cls(**event.__dict__)
 
-
+#creates a request ID for the entry
 def new_request_id() -> str:
     return f"REQ-{uuid4().hex[:10].upper()}"
 
-
+#returns audit log for the entry
 def new_audit_id() -> str:
     return f"AUD-{uuid4().hex[:10].upper()}"
 
