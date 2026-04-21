@@ -11,3 +11,4 @@ pytest-asyncio==0.24.0
 streamlit
 requests
 pandas
+matplotlib
