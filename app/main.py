@@ -164,3 +164,13 @@ async def get_audit_log(
     workflow_engine = WorkflowEngine(db)
     events = await workflow_engine.get_audit_log(request_id)
     return [AuditEventResponse.from_entity(e) for e in events]
+
+from fastapi.middleware.cors import CORSMiddleware
+
+app.add_middleware(
+    CORSMiddleware,
+    allow_origins=["*"],
+    allow_credentials=True,
+    allow_methods=["*"],
+    allow_headers=["*"],
+)
