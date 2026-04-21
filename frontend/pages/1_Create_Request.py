@@ -2,7 +2,7 @@ import streamlit as st
 from api_client import create_request, submit_request
 
 st.title("Create Request")
-st.image
+
 
 REQUEST_TYPES = [
     "PROCUREMENT",
