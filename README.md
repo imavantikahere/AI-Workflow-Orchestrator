@@ -127,7 +127,7 @@ AI is used for enrichment, not as the source of truth.
 
 ## Deployment Lessons Learned
 
-[Read detailed lessons](AI_Workflow_Deployment_Lessons.pdf)
+Please read separate pdf document on the same uploaded to the project repository.
 
 # How to run the Project
 
