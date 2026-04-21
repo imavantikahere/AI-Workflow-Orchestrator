@@ -1,5 +1,19 @@
 # AI-Workflow-Orchestrator
-A production-style backend system for orchestrating enterprise workflows with multi-step approvals, SLA-based escalation, audit logging, and LLM-powered request enrichment. Built with FastAPI and designed to demonstrate how AI can be embedded into real business processes.
+
+An end-to-end production level AI-powered workflow management system that automates request classification, approval routing, and decision-making using Large Language Models. It is designed to demonstrate how AI can be embedded into real business processes.
+
+
+🔗 **Live Demo (Frontend):** https://ai-workflow-orchestrator-avantika.streamlit.app  
+🔗 **Backend API (SwaggerUI):** https://ai-workflow-orchestrator.onrender.com/docs
+
+
+## Features
+
+- LLM-powered request classification & enrichment
+- Dynamic approval chain generation
+- Workflow engine with state transitions
+- Streamlit dashboard for request management
+- Full-stack deployment (FastAPI (Render) + Streamlit)
 
 # This project is built in three phases:
 
@@ -10,20 +24,11 @@ A production-style backend system for orchestrating enterprise workflows with mu
    Focus: Persistence, real audit trails, and production-style backend architecture with complete manual SwaggerUI testing
 3. Front interface integration using Streamlit (Completed)
    Focus: To connect backend with frontend and to create an integrated user friendly system
-4. Deployment using cloud based service (In Progress)
+4. Deployment using Render (for FastAPI backend) and Streamlit for frontend (Completed)
 
 # System Architecture
 
 <img width="1536" height="1024" alt="ChatGPT Image Feb 17, 2026 at 04_26_11 PM" src="https://github.com/user-attachments/assets/3d1630ef-57ca-4d72-bba3-89add840a90a" />
-
-# Project Components 
-This project shows how to embed AI into a real system:
-1. State machine lifecycle (DRAFT → SUBMITTED → IN_REVIEW → APPROVED/REJECTED/ESCALATED)
-2. Multi-step approval chains
-3. Role-based actions (RBAC-style)
-4. Audit logging for traceability
-5. SLA and escalation (enterprise requirement)
-6. LLM used as a support layer (classification/extraction/summarization)
 
 # User Flow Process
 
@@ -100,21 +105,34 @@ AI is used for enrichment, not as the source of truth.
 # Tech Stack
 * Core Backend
 1. Python 3.10+
-2. FastAPI — REST API + Swagger UI at /docs
+2. FastAPI — REST API + Swagger UI 
 3. Pydantic — request/response validation
 * AI / LLM Layer
-1. OpenAI (Responses API) or Azure OpenAI (swappable provider)
-2. Structured output enforced with JSON schema (so the backend doesn’t break)
-   
+1. OpenAI (Responses API) or Groq (swappable provider)
+2. Structured output enforced with JSON schema 
 * Database (Phase 2)
 1. SQLite (local dev) using:
 2. SQLAlchemy (async) + aiosqlite
+* Deployment (Phase 3 and 4)
+1. Streamlit for frontend UI and deployment
+2. Render for FASTAPI backend deployment 
 
-Testing (optional but recommended)
-pytest + httpx for API tests
+## Deployment Lessons Learned
 
+[Read detailed lessons](AI_Workflow_Deployment_Lessons.pdf)
 
 # How to run the Project
+
+## Deployed, ready made demo links:
+
+**Live Demo (Frontend):** https://ai-workflow-orchestrator-avantika.streamlit.app  
+**Backend API (Swagger):** https://ai-workflow-orchestrator.onrender.com/docs
+
+---
+
+## LOCAL SETUP 
+
+Before local setup, make sure BASE URL in api_client.py corresponds to localhost and local database. Comments are added in code for easy setup.
 
 ## 1. Clone the repository
 ```code
@@ -174,11 +192,11 @@ SELECT * FROM workflow_requests
 
 ```
 
+## Future Improvements
 
-
-
-
-## Notes
-- Phase 2 has been completed. Phase 3 in progress to add frontend layer.
-- To enable real LLM enrichment, set `OPENAI_API_KEY` in your environment.
+- Migrate to Postgres for persistent storage
+- Add authentication & user roles/ access based system
+- Improve UI/UX of Streamlit dashboard
+- Add more analytics and reporting features
+- Expand LLM capabilities (multi-agent workflows)
 
