@@ -1,3 +1,13 @@
+'''The WorkflowEngine class defined in this file is the workflow brain of the application.
+It does not directly define API routes, and it does not directly define database tables either. Instead, it:
+
+receives validated payloads from FastAPI
+applies workflow rules
+calls the repository to save changes
+logs audit events
+enforces who can approve or reject
+decides approval chains based on request type and fields like amount, leave_days, and severity'''
+
 from __future__ import annotations
 from app.ai_llm import ai_service
 from datetime import timedelta
